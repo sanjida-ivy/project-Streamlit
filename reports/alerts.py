@@ -10,7 +10,7 @@ st.title("Battery Data Analytics")
 # Load and display overview Excel data
 @st.cache_data
 def load_overview():
-    df_overview = pd.read_excel('Inputdata/MeasurementData/Overview.xlsx')
+    df_overview = pd.read_excel('Inputdata/MeasurementData/Overview.xlsx', encoding='utf-8')
     df_overview = df_overview.drop(['Unnamed: 13', 'Note'], axis=1)
     df_overview = df_overview.dropna()
     df_overview.rename(columns={'Unnamed: 8': 'SoC difference'}, inplace=True)
@@ -23,7 +23,7 @@ st.dataframe(df_overview)
 # Load and display combined trip data
 @st.cache_data
 def load_combined_trip():
-    df_combinedTrip = pd.read_csv('Inputdata/MeasurementData/TripA01.csv')
+    df_combinedTrip = pd.read_csv('Inputdata/MeasurementData/TripA01.csv', encoding='utf-8')
     return df_combinedTrip
 
 st.write("### All Trip Data")
@@ -33,7 +33,7 @@ st.dataframe(df_combinedTrip.sample(n=10))
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
 def load_master():
-    df_master = pd.read_csv('Inputdata/MeasurementData/TripA01.csv')  # Example file path
+    df_master = pd.read_csv('Inputdata/MeasurementData/TripA01.csv', encoding='utf-8')  # Example file path
     df_master = df_master.iloc[:, :-2]  # Remove last 2 columns
     return df_master
 
