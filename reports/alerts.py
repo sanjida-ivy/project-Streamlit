@@ -56,7 +56,7 @@ df_combinedTrip = load_combined_trip()
 
 # Display the combined data frame in Streamlit
 st.write("### All Trip Data")
-st.dataframe(df_combinedTrip)
+st.dataframe(df_combinedTrip.head(10))
 
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
