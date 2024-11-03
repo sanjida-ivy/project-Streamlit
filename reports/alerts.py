@@ -22,12 +22,8 @@ st.write("### Overview Data")
 df_overview = load_overview()
 st.dataframe(df_overview)
 
-# Load and display combined trip data
 @st.cache_data
-def load_combined_trip():
-    # Directory where your Trip files are located
-    input_dir = 'Inputdata/MeasurementData'
-
+def load_combined_trip(input_dir='Inputdata/MeasurementData'):
     # Step 1: Find all files matching the pattern Trip*.csv
     trip_files = glob.glob(os.path.join(input_dir, 'Trip*.csv'))
 
@@ -35,18 +31,33 @@ def load_combined_trip():
     dataframes = []
 
     for file in trip_files:
-        # Step 2: Read each file with semicolon separator and initial encoding (e.g., 'latin1')
-        df = pd.read_csv(file, sep=';', encoding='latin1')
-        
-        # Add the loaded data frame to the list
-        dataframes.append(df)
+        try:
+            # Step 2: Read each file with semicolon separator and initial encoding (e.g., 'latin1')
+            df = pd.read_csv(file, sep=';', encoding='latin1')
+            dataframes.append(df)
+        except Exception as e:
+            st.error(f"Error reading {file}: {e}")
+
+    if not dataframes:
+        st.warning("No trip data files found or all files failed to read.")
+        return pd.DataFrame()  # Return an empty DataFrame if no data was loaded
 
     # Step 3: Concatenate all data frames into one
     df_combined = pd.concat(dataframes, ignore_index=True)
     st.write("#### Combining data is done")
 
     # Step 4: Save the combined data frame as a single UTF-8 encoded file
-    df_combined.to_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', index=False, encoding='utf-8')
+    combined_file_path = os.path.join(input_dir, 'CombinedTripData_utf8.csv')
+    df_combined.to_csv(combined_file_path, index=False, encoding='utf-8')
+    st.success(f"Combined trip data saved to {combined_file_path}")
+
+    # Step 5: Delete the individual trip files
+    for file in trip_files:
+        try:
+            os.remove(file)
+            st.write(f"Deleted file: {file}")
+        except Exception as e:
+            st.error(f"Error deleting {file}: {e}")
 
     # Return the combined data frame
     return df_combined
@@ -56,7 +67,10 @@ df_combinedTrip = load_combined_trip()
 
 # Display the combined data frame in Streamlit
 st.write("### All Trip Data")
-st.dataframe(df_combinedTrip.head(10))
+if not df_combinedTrip.empty:
+    st.dataframe(df_combinedTrip.head(10))
+else:
+    st.warning("No data available to display.")
 
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
