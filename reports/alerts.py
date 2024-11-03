@@ -88,7 +88,7 @@ def load_master():
 
 st.write("### Master Data")
 df_master = load_master()
-st.dataframe(df_master)
+st.dataframe(df_master.head(10))
 
 # Print the remaining column names
 st.write("### Remaining Columns in Master Data")
