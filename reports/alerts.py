@@ -23,7 +23,7 @@ st.dataframe(df_overview)
 # Load and display combined trip data
 @st.cache_data
 def load_combined_trip():
-    df_combinedTrip = pd.read_csv('Inputdata/MeasurementData/CombinedData.csv')
+    df_combinedTrip = pd.read_csv('Inputdata/MeasurementData/TripA01.csv')
     return df_combinedTrip
 
 st.write("### All Trip Data")
@@ -33,7 +33,7 @@ st.dataframe(df_combinedTrip.sample(n=100))
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
 def load_master():
-    df_master = pd.read_csv('Inputdata/MeasurementData/CombinedData.csv')  # Example file path
+    df_master = pd.read_csv('Inputdata/MeasurementData/TripA01.csv')  # Example file path
     df_master = df_master.iloc[:, :-2]  # Remove last 2 columns
     return df_master
 
