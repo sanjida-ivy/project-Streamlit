@@ -27,18 +27,38 @@ st.dataframe(df_overview)
 def load_combined_trip():
     # Directory where your Trip files are located
     input_dir = 'Inputdata/MeasurementData'
+    combined_file_path = os.path.join(input_dir, 'CombinedTripData_utf8.csv')
 
     # Step 1: Find all files matching the pattern Trip*.csv
     trip_files = glob.glob(os.path.join(input_dir, 'Trip*.csv'))
+    trip_file_names = [os.path.basename(file) for file in trip_files]  # Get only the file names
 
-    # List to hold each data frame
+    # Check if the combined file already exists
+    if os.path.exists(combined_file_path):
+        st.write("#### Combined file already exists. Checking for missing trip files.")
+        # Load the existing combined data frame
+        df_combined = pd.read_csv(combined_file_path, encoding='utf-8')
+
+        # Check if all trip files are included in the combined data frame
+        combined_file_trip_names = df_combined['trip_file_name'].unique() if 'trip_file_name' in df_combined.columns else []
+
+        missing_files = [file for file in trip_file_names if file not in combined_file_trip_names]
+
+        if missing_files:
+            st.write(f"#### Missing trip files: {missing_files}. Merging again.")
+        else:
+            st.write("#### All trip files are included in the combined data.")
+            return df_combined
+
+    # If combined file does not exist or if there are missing files, combine them
     dataframes = []
-
+    
     for file in trip_files:
         # Step 2: Read each file with semicolon separator and initial encoding (e.g., 'latin1')
         df = pd.read_csv(file, sep=';', encoding='latin1')
         
-        # Add the loaded data frame to the list
+        # Add a new column to identify the source file
+        df['trip_file_name'] = os.path.basename(file)  # Store the original file name
         dataframes.append(df)
 
     # Step 3: Concatenate all data frames into one
@@ -46,7 +66,7 @@ def load_combined_trip():
     st.write("#### Combining data is done")
 
     # Step 4: Save the combined data frame as a single UTF-8 encoded file
-    df_combined.to_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', index=False, encoding='utf-8')
+    df_combined.to_csv(combined_file_path, index=False, encoding='utf-8')
 
     # Return the combined data frame
     return df_combined
