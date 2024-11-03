@@ -28,7 +28,7 @@ def load_combined_trip():
 
 st.write("### All Trip Data")
 df_combinedTrip = load_combined_trip()
-st.dataframe(df_combinedTrip.sample(n=100))
+st.dataframe(df_combinedTrip.sample(n=10))
 
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
