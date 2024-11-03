@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import glob
 
 # Set Streamlit page layout and title
 st.set_page_config(layout="wide")
@@ -10,7 +12,7 @@ st.title("Battery Data Analytics")
 # Load and display overview Excel data
 @st.cache_data
 def load_overview():
-    df_overview = pd.read_excel('Inputdata/MeasurementData/Overview.xlsx', encoding='utf-8')
+    df_overview = pd.read_excel('Inputdata/MeasurementData/Overview.xlsx')
     df_overview = df_overview.drop(['Unnamed: 13', 'Note'], axis=1)
     df_overview = df_overview.dropna()
     df_overview.rename(columns={'Unnamed: 8': 'SoC difference'}, inplace=True)
@@ -23,17 +25,42 @@ st.dataframe(df_overview)
 # Load and display combined trip data
 @st.cache_data
 def load_combined_trip():
-    df_combinedTrip = pd.read_csv('Inputdata/MeasurementData/TripA01.csv', encoding='utf-8')
-    return df_combinedTrip
+    # Directory where your Trip files are located
+    input_dir = 'Inputdata/MeasurementData'
 
-st.write("### All Trip Data")
+    # Step 1: Find all files matching the pattern Trip*.csv
+    trip_files = glob.glob(os.path.join(input_dir, 'Trip*.csv'))
+
+    # List to hold each data frame
+    dataframes = []
+
+    for file in trip_files:
+        # Step 2: Read each file with semicolon separator and initial encoding (e.g., 'latin1')
+        df = pd.read_csv(file, sep=';', encoding='latin1')
+        
+        # Add the loaded data frame to the list
+        dataframes.append(df)
+
+    # Step 3: Concatenate all data frames into one
+    df_combined = pd.concat(dataframes, ignore_index=True)
+
+    # Step 4: Save the combined data frame as a single UTF-8 encoded file
+    df_combined.to_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', index=False, encoding='utf-8')
+
+    # Return the combined data frame
+    return df_combined
+
+# Load the combined data frame
 df_combinedTrip = load_combined_trip()
-st.dataframe(df_combinedTrip.sample(n=10))
+
+# Display the combined data frame in Streamlit
+st.write("### All Trip Data")
+st.dataframe(df_combinedTrip)
 
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
 def load_master():
-    df_master = pd.read_csv('Inputdata/MeasurementData/TripA01.csv', encoding='utf-8')  # Example file path
+    df_master = pd.read_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', encoding='utf-8')  # Example file path
     df_master = df_master.iloc[:, :-2]  # Remove last 2 columns
     return df_master
 
