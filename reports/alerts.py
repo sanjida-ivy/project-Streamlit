@@ -43,6 +43,7 @@ def load_combined_trip():
 
     # Step 3: Concatenate all data frames into one
     df_combined = pd.concat(dataframes, ignore_index=True)
+    st.write("#### Combining data is done")
 
     # Step 4: Save the combined data frame as a single UTF-8 encoded file
     df_combined.to_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', index=False, encoding='utf-8')
