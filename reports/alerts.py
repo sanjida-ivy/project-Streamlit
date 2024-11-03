@@ -22,7 +22,7 @@ st.write("### Overview Data")
 df_overview = load_overview()
 st.dataframe(df_overview)
 
-@st.cache_data
+""" @st.cache_data
 def load_combined_trip(input_dir='Inputdata/MeasurementData'):
     # Step 1: Find all files matching the pattern Trip*.csv
     trip_files = glob.glob(os.path.join(input_dir, 'Trip*.csv'))
@@ -70,13 +70,13 @@ st.write("### All Trip Data")
 if not df_combinedTrip.empty:
     st.dataframe(df_combinedTrip.head(10))
 else:
-    st.warning("No data available to display.")
+    st.warning("No data available to display.") """
 
 # Load and process df_master (make sure to define how to load it)
 @st.cache_data
 def load_master():
-    df_master = pd.read_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', encoding='utf-8')  # Example file path
-    df_master = df_master.iloc[:, :-2]  # Remove last 2 columns
+    df_master = pd.read_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', encoding='utf-8')  
+    
     return df_master
 
 st.write("### Master Data")
