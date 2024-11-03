@@ -39,18 +39,19 @@ def load_combined_trip():
         # Load the existing combined data frame
         df_combined = pd.read_csv(combined_file_path, encoding='utf-8')
 
-        # Check if all trip files are included in the combined data frame
+        # Get the names of trip files included in the combined DataFrame
         combined_file_trip_names = df_combined['trip_file_name'].unique() if 'trip_file_name' in df_combined.columns else []
 
+        # Determine if any trip files are missing
         missing_files = [file for file in trip_file_names if file not in combined_file_trip_names]
 
-        if missing_files:
-            st.write(f"#### Missing trip files: {missing_files}. Merging again.")
+        if not missing_files:
+            st.write("#### All trip files are already included in the combined data. Loading existing data.")
+            return df_combined  # Return the existing combined data if no files are missing
         else:
-            st.write("#### All trip files are included in the combined data.")
-            return df_combined
-
-    # If combined file does not exist or if there are missing files, combine them
+            st.write(f"#### Missing trip files: {missing_files}. Merging again.")
+    
+    # If the combined file does not exist or if there are missing files, combine them
     dataframes = []
     
     for file in trip_files:
