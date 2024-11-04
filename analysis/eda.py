@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # Set Streamlit page layout and title
 st.set_page_config(layout="wide")
 st.title("Battery Data Analytics")
-st.subheader("Exploratory Data Analysis (EDA)")
+st.subheader("Exploratory Data Analysis (EDA): Overview data")
 
 # Load and display overview Excel data
 @st.cache_data
@@ -135,3 +135,90 @@ st.write("Outlier Visualization: Highlight outliers in data plots. Statistical M
 
 st.header("Data Quality Checks")
 st.write("Missing Values Analysis: Display counts and methods for handling. Duplicates Identification: Check for and handle duplicate entries. Consistency Checks: Ensure data formats and types are correct.")
+
+st.header("Battery Data Analytics")
+st.subheader("Exploratory Data Analysis (EDA): Trip data")
+
+# Load and display overview Excel data
+@st.cache_data
+def load_overview():
+    df_CombinedTripData = pd.read_csv('Inputdata/MeasurementData/CombinedTripData_utf8.csv', encoding='utf-8') 
+    return df_CombinedTripData
+
+# Load the overview data
+df_CombinedTripData = load_overview()
+
+# Generate descriptions based on data types and unique values
+column_descriptions = {}
+for column in df_CombinedTripData.columns:
+    col_type = df_CombinedTripData[column].dtype
+    unique_values = df_CombinedTripData[column].nunique()
+    description = f"Type: {col_type}, Unique values: {unique_values}"
+    column_descriptions[column] = description
+
+# Select columns to display (defaulting to the first five columns)
+default_columns = df_CombinedTripData.columns.tolist()[:5]
+selected_columns = st.multiselect("Select columns to display", options=df_CombinedTripData.columns.tolist(), default=default_columns)
+
+# Set a minimum height for both containers
+min_height = "10px"
+
+# Show the selected columns in the DataFrame and descriptions side by side
+if selected_columns:
+    col1, col2 = st.columns([3, 2])
+
+    with col1:
+        st.write("### Selected Data")
+        st.markdown(f"<div style='min-height: {min_height}; height: auto; overflow: auto;'>", unsafe_allow_html=True)
+        st.dataframe(df_CombinedTripData[selected_columns], use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col2:
+        st.write("### Summary Statistics")
+        numeric_columns = df_CombinedTripData[selected_columns].apply(pd.to_numeric, errors='coerce')
+        summary_stats = numeric_columns.describe().T
+        summary_stats = summary_stats[['mean', '50%', 'min', 'max', 'std']].round(2)
+        summary_stats.columns = ['Mean', 'Median', 'Min', 'Max', 'Std Dev']
+        st.dataframe(summary_stats)
+
+    # Filter only numerical columns for visualization
+    numerical_columns = [col for col in selected_columns if pd.api.types.is_numeric_dtype(df_CombinedTripData[col])]
+
+    # Histograms and KDE Plots
+    if numerical_columns:
+        st.write("### Histograms and KDE Plots")
+        num_columns = len(numerical_columns)
+        plot_columns = st.columns(num_columns)
+
+        for i, column in enumerate(numerical_columns):
+            with plot_columns[i]:
+                fig, ax = plt.subplots(figsize=(5, 4))
+                sns.histplot(df_CombinedTripData[column], bins=30, kde=True, stat='density', ax=ax)
+                ax.set_title(f"Histogram and KDE for {column}")
+                ax.set_xlabel(column)
+                ax.set_ylabel('Density')
+                st.pyplot(fig)
+
+        # Correlation Matrix and Pairwise Scatter Plots
+        st.write("### Correlation Matrix and Pairwise Scatter Plots")
+        col_corr, col_scatter = st.columns(2)
+
+        # Correlation Matrix
+        with col_corr:
+            correlation_matrix = df_CombinedTripData[numerical_columns].corr()
+            plt.figure(figsize=(10, 6))
+            sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
+            plt.title("Correlation Matrix")
+            st.pyplot(plt)
+
+        # Pairwise Scatter Plots
+        with col_scatter:
+            if len(numerical_columns) <= 10:  # Limit for reasonable performance
+                pair_plot_fig = sns.pairplot(df_CombinedTripData[numerical_columns])
+                st.pyplot(pair_plot_fig)
+            else:
+                st.write("### Pairwise scatter plots are only displayed for up to 10 selected columns.")
+    else:
+        st.write("### No numerical columns selected for visualization.")
+else:
+    st.write("### No columns selected.")
